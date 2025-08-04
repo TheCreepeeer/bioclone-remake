@@ -1,0 +1,195 @@
+/*
+*
+*	Megan Grass
+*	March 2, 2025
+*
+*/
+
+#pragma once
+
+#include <resource.h>
+
+#include <std_window.h>
+
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <imgui_impl_dx9.h>
+#include <imgui_impl_win32.h>
+#include <imgui_stdlib.h>
+
+#include <bio_geometry.h>
+
+#include <bio_camera.h>
+
+#include <bio1.h>
+
+#include <bio2.h>
+
+#include <bio2_nov96.h>
+
+#include <bio3.h>
+
+#include <bio_cdx.h>
+
+#include <bio_disk.h>
+
+typedef class Global_Application Global;
+
+extern std::unique_ptr<Global_Application> G;
+
+class Global_Application final :
+	public Resident_Evil_Common {
+private:
+
+	Standard_String Str;
+
+	String m_ConfigStr;
+
+	std::unique_ptr<IDirect3DTexture9, IDirect3DDelete9<IDirect3DTexture9>> m_RenderTexture;
+	std::unique_ptr<IDirect3DSurface9, IDirect3DDelete9<IDirect3DSurface9>> m_RenderSurface;
+	D3DSURFACE_DESC m_RenderDesc;
+
+	std::uint32_t m_RenderWidth, m_RenderHeight;
+
+	float m_RenderZoom, m_RenderZoomMin, m_RenderZoomMax;
+
+	float m_MouseX, m_MouseY;
+	float m_MouseScaledX, m_MouseScaledY;
+
+	int m_BootWidth, m_BootHeight;
+	bool b_BootMaximized, b_BootFullscreen;
+
+	bool b_RequestFontChange;
+
+	float m_BorderRed, m_BorderGreen, m_BorderBlue;
+
+	bool b_ViewWindowOptions;
+
+	bool b_Shutdown;
+	bool b_ForceShutdown;
+
+	std::unique_ptr<Resident_Evil> Bio1;
+	std::unique_ptr<Resident_Evil_2_Nov96> Bio2Nov96;
+	std::unique_ptr<Resident_Evil_2> Bio2;
+	std::unique_ptr<Resident_Evil_3> Bio3;
+	std::unique_ptr<CDX_File_Container> Cdx;
+	std::unique_ptr<Capcom_Disk> Exe;
+
+	std::unique_ptr<Resident_Evil_Model> Player;
+
+	std::unique_ptr<ImGuiContext, decltype(&ImGui::DestroyContext)> Context;
+
+	void OpenConfig(void);
+	std::filesystem::path GetConfigFilename(void) const { return Window->GetUserDocumentsDir() / VER_INTERNAL_NAME_STR / L"config.ini"; }
+	std::filesystem::path GetImGuiConfigFilename(void) const { return Window->GetUserDocumentsDir() / VER_INTERNAL_NAME_STR / L"imgui.ini"; }
+	std::filesystem::path GetToolbarIconFilename(void) const { return Window->GetUserDocumentsDir() / VER_INTERNAL_NAME_STR / L"icons.png"; }
+
+	void Tooltip(String Tip);
+	void TooltipOnHover(String Tip);
+	bool ScrollOnHover(void* Input, ImGuiDataType DataType, std::uintmax_t Step, std::uintmax_t Min, std::uintmax_t Max, std::function<void(void)> OnComplete = [&]() {}) const;
+	bool ScrollFloatOnHover(void* Input, ImGuiDataType DataType, double Step, double Min, double Max, std::function<void(void)> OnComplete = [&]() {}) const;
+	bool ScrollComboOnHover(String ID, void* Input, ImGuiDataType DataType, std::uintmax_t Step, std::uintmax_t Min, std::uintmax_t Max, std::function<void(void)> OnComplete = [&]() {}) const;
+	void DrawVerticalLine(float HorizontalIndent, float VerticalIndent, float Thickness, float Red, float Green, float Blue, float Alpha = 1.0f);
+
+	bool IsRoomOpen(void);
+	void CloseRDT(void);
+	void OpenRDT(void);
+	void SaveRDT(void);
+	void OpenModel(void);
+	void OpenModelTexture(void);
+	void SaveModelTexture(void);
+	void Screenshot(void);
+
+	void ModelEditor(void);
+
+	void DrawBackground(void) const;
+	void DrawCamera(void);
+	void DrawSprite(void);
+	void DrawSwitch(void);
+	void DrawCollision(void);
+	void DrawBlock(void);
+	void DrawFloor(void);
+
+	void MainMenu(void);
+	void Options(void);
+	void RenderWindow(void);
+	void LeftPanel(ImVec2 Position, ImVec2 Size);
+	void CenterPanel(ImVec2 Position, ImVec2 Size);
+	void RightPanel(ImVec2 Position, ImVec2 Size);
+
+	void RenderScene(void);
+	void Draw(void);
+	void Update(void);
+	void DragAndDrop(StrVecW Files) const;
+	void Commandline(StrVecW Args);
+
+	Global_Application(Global_Application&&) = delete;
+	Global_Application& operator = (Global_Application&&) = delete;
+
+	Global_Application(const Global_Application&) = delete;
+	Global_Application& operator = (const Global_Application&) = delete;
+
+public:
+
+	std::unique_ptr<Standard_Window> Window;
+
+	std::shared_ptr<Standard_DirectX_9> Render;
+
+	std::shared_ptr<Sony_PlayStation_GTE> GTE;
+
+	std::unique_ptr<Resident_Evil_Camera> Camera;
+
+	std::unique_ptr<Resident_Evil_Geometry> Geometry;
+
+	Global_Application(void) :
+		Context(nullptr, &ImGui::DestroyContext),
+		Window(std::make_unique<Standard_Window>()),
+		Render(std::make_shared<Standard_DirectX_9>()),
+		GTE{ std::make_shared<Sony_PlayStation_GTE>() },
+		Bio1{ std::make_unique<Resident_Evil>() },
+		Bio2Nov96{ std::make_unique<Resident_Evil_2_Nov96>() },
+		Bio2{ std::make_unique<Resident_Evil_2>() },
+		Bio3{ std::make_unique<Resident_Evil_3>() },
+		Cdx{ std::make_unique<CDX_File_Container>() },
+		Exe{ std::make_unique<Capcom_Disk>() },
+		Player{ std::make_unique<Resident_Evil_Model>() },
+		Str(),
+		m_ConfigStr(),
+		m_RenderDesc(),
+		m_RenderWidth(0),
+		m_RenderHeight(0),
+		m_RenderZoom(1.0f),
+		m_RenderZoomMin(1.0f),
+		m_RenderZoomMax(128.0f),
+		m_MouseX(0.0f),
+		m_MouseY(0.0f),
+		m_MouseScaledX(0.0f),
+		m_MouseScaledY(0.0f),
+		m_BootWidth(0),
+		m_BootHeight(0),
+		b_BootMaximized(false),
+		b_BootFullscreen(false),
+		b_RequestFontChange(false),
+		m_BorderRed(0.0f),
+		m_BorderGreen(0.0f),
+		m_BorderBlue(0.0f),
+		b_ViewWindowOptions(false),
+		b_Shutdown(false),
+		b_ForceShutdown(false)
+	{
+		Game = Video_Game::Resident_Evil_2;
+		Camera = std::make_unique<Resident_Evil_Camera>(Render, GTE);
+		Geometry = std::make_unique<Resident_Evil_Geometry>(Render, GTE);
+	}
+	~Global_Application(void) = default;
+
+	void About(void) const;
+
+	void Controls(void) const;
+
+	void Shutdown(void);
+
+	void SaveConfig(void);
+
+	int Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
+};
