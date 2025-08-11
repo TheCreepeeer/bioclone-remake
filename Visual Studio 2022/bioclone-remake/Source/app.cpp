@@ -505,6 +505,10 @@ int Global_Application::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWST
 		Player->SetWindow(Window->Get());
 
 		Player->SetGame(Game);
+
+		Player->Hitbox().w = 450;
+		Player->Hitbox().h = -1530;
+		Player->Hitbox().d = 450;
 	}
 
 	Standard_Thread_Pool ThreadPool;
