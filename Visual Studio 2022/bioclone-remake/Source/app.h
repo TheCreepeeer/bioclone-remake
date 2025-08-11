@@ -75,6 +75,8 @@ private:
 	std::unique_ptr<CDX_File_Container> Cdx;
 	std::unique_ptr<Capcom_Disk> Exe;
 
+	std::shared_ptr<Resident_Evil_Animation> Rbj;
+
 	std::unique_ptr<Resident_Evil_Model> Player;
 
 	std::unique_ptr<ImGuiContext, decltype(&ImGui::DestroyContext)> Context;
@@ -95,11 +97,13 @@ private:
 	void CloseRDT(void);
 	void OpenRDT(void);
 	void SaveRDT(void);
-	void OpenModel(void);
-	void OpenModelTexture(void);
-	void SaveModelTexture(void);
+	void SetRoomAnimations(void);
+	void OpenPlayerModel(std::filesystem::path Filename = L"");
+	void OpenPlayerTexture(std::filesystem::path Filename = L"");
+	void SavePlayerTexture(void);
 	void Screenshot(void);
 
+	void CollisionEditor(void);
 	void ModelEditor(void);
 
 	void DrawBackground(void) const;
@@ -109,6 +113,7 @@ private:
 	void DrawCollision(void);
 	void DrawBlock(void);
 	void DrawFloor(void);
+	void Collision(VECTOR2& Position, SIZEVECTOR Hitbox);
 
 	void MainMenu(void);
 	void Options(void);

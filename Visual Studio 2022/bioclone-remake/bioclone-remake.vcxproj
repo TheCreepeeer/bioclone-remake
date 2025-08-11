@@ -66,10 +66,6 @@
     <ClCompile Include="..\..\bio-lib\Common\bio_model.cpp" />
     <ClCompile Include="..\..\bio-lib\Disc\bio_disk.cpp" />
     <ClCompile Include="..\..\mstd-lib\DX9\std_dx9.cpp" />
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_pixel_passthrough.cpp" />
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_playstation_dither.cpp" />
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_vert_shader.cpp" />
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_xyzw_shader.cpp" />
     <ClCompile Include="..\..\mstd-lib\Geometry\std_matrix.cpp" />
     <ClCompile Include="..\..\mstd-lib\std_basic_fstream.cpp" />
     <ClCompile Include="..\..\mstd-lib\std_crc32.cpp" />
@@ -146,6 +142,7 @@
     <ClCompile Include="Source\app.cpp" />
     <ClCompile Include="Source\app_config.cpp" />
     <ClCompile Include="Source\app_draw.cpp" />
+    <ClCompile Include="Source\app_edit_collision.cpp" />
     <ClCompile Include="Source\app_edit_model.cpp" />
     <ClCompile Include="Source\app_file.cpp" />
     <ClCompile Include="Source\app_imgui.cpp" />
@@ -296,6 +293,50 @@
   <ItemGroup>
     <Text Include="..\..\sdk\imgui\LICENSE.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\pixel_passthrough.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\pixel_playstation_dither.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\vertex.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">3.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">3.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -378,6 +419,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Windows;../../mstd-lib;../../mstd-lib/Windows;../../mstd-lib/Geometry;../../mstd-lib/DX9;../../sony-lib;../../sony-lib/GTE;../../bio-lib/Bio1;../../bio-lib/Bio2_Nov96;../../bio-lib/Bio2;../../bio-lib/Bio2/MD1;../../bio-lib/Bio2/RDT;../../bio-lib/Bio3;../../bio-lib/Bio3/MD2;../../bio-lib/Common;../../bio-lib/Common/Model;../../bio-lib/Disc;../../bio-lib/CDX;../../sdk/zlib;../../sdk/libjpeg-turbo/src;../../sdk/libjpeg-turbo/build;../../sdk/libpng;../../sdk/imgui;../../sdk/imgui/backends;../../sdk/imgui/misc/cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -398,9 +440,11 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>xcopy "..\..\mstd-lib\DX9\shader" "$(SolutionDir)shader" /E /I /Y</Command>
     </PreBuildEvent>
+    <FxCompile>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -414,6 +458,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Windows;../../mstd-lib;../../mstd-lib/Windows;../../mstd-lib/Geometry;../../mstd-lib/DX9;../../sony-lib;../../sony-lib/GTE;../../bio-lib/Bio1;../../bio-lib/Bio2_Nov96;../../bio-lib/Bio2;../../bio-lib/Bio2/MD1;../../bio-lib/Bio3;../../bio-lib/Bio3/MD2;../../bio-lib/Common;../../bio-lib/Common/Model;../../bio-lib/Disc;../../bio-lib/CDX;../../sdk/zlib;../../sdk/libjpeg-turbo/src;../../sdk/libjpeg-turbo/build;../../sdk/libpng;../../sdk/imgui;../../sdk/imgui/backends;../../sdk/imgui/misc/cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -428,9 +473,11 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>xcopy "..\..\mstd-lib\DX9\shader" "$(SolutionDir)shader" /E /I /Y</Command>
     </PreBuildEvent>
+    <FxCompile>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -442,6 +489,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Windows;../../mstd-lib;../../mstd-lib/Windows;../../mstd-lib/Geometry;../../mstd-lib/DX9;../../sony-lib;../../sony-lib/GTE;../../bio-lib/Bio1;../../bio-lib/Bio2_Nov96;../../bio-lib/Bio2;../../bio-lib/Bio2/MD1;../../bio-lib/Bio2/RDT;../../bio-lib/Bio3;../../bio-lib/Bio3/MD2;../../bio-lib/Common;../../bio-lib/Common/Model;../../bio-lib/Disc;../../bio-lib/CDX;../../sdk/zlib;../../sdk/libjpeg-turbo/src;../../sdk/libjpeg-turbo/build;../../sdk/libpng;../../sdk/imgui;../../sdk/imgui/backends;../../sdk/imgui/misc/cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -458,9 +506,11 @@
       <ResourceOutputFileName />
     </ManifestResourceCompile>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>xcopy "..\..\mstd-lib\DX9\shader" "$(SolutionDir)shader" /E /I /Y</Command>
     </PreBuildEvent>
+    <FxCompile>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -474,6 +524,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Windows;../../mstd-lib;../../mstd-lib/Windows;../../mstd-lib/Geometry;../../mstd-lib/DX9;../../sony-lib;../../sony-lib/GTE;../../bio-lib/Bio1;../../bio-lib/Bio2_Nov96;../../bio-lib/Bio2;../../bio-lib/Bio2/MD1;../../bio-lib/Bio3;../../bio-lib/Bio3/MD2;../../bio-lib/Common;../../bio-lib/Common/Model;../../bio-lib/Disc;../../bio-lib/CDX;../../sdk/zlib;../../sdk/libjpeg-turbo/src;../../sdk/libjpeg-turbo/build;../../sdk/libpng;../../sdk/imgui;../../sdk/imgui/backends;../../sdk/imgui/misc/cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -488,9 +539,11 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>xcopy "..\..\mstd-lib\DX9\shader" "$(SolutionDir)shader" /E /I /Y</Command>
     </PreBuildEvent>
+    <FxCompile>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

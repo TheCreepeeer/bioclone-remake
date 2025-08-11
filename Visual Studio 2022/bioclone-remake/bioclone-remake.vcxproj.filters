@@ -155,6 +155,9 @@
     <Filter Include="Standard\Geometry">
       <UniqueIdentifier>{f72089ac-724c-471e-bf37-fa72d004d61d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Standard\DX9\Shader">
+      <UniqueIdentifier>{b6c9511a-942d-4b32-a532-6cac7f297c54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\mstd-lib\std_basic_fstream.cpp">
@@ -200,15 +203,6 @@
       <Filter>Sony</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mstd-lib\DX9\std_dx9.cpp">
-      <Filter>Standard\DX9</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_pixel_passthrough.cpp">
-      <Filter>Standard\DX9</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_playstation_dither.cpp">
-      <Filter>Standard\DX9</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_vert_shader.cpp">
       <Filter>Standard\DX9</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mstd-lib\std_thread_pool.cpp">
@@ -526,8 +520,8 @@
     <ClCompile Include="Source\app_edit_model.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mstd-lib\DX9\std_dx9_xyzw_shader.cpp">
-      <Filter>Standard\DX9</Filter>
+    <ClCompile Include="Source\app_edit_collision.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -920,5 +914,16 @@
     <Text Include="..\..\sdk\imgui\LICENSE.txt">
       <Filter>SDK\imgui</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\pixel_passthrough.hlsl">
+      <Filter>Standard\DX9\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\pixel_playstation_dither.hlsl">
+      <Filter>Standard\DX9\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\mstd-lib\DX9\shader\vertex.hlsl">
+      <Filter>Standard\DX9\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

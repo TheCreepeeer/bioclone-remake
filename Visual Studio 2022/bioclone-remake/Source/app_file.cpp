@@ -22,6 +22,7 @@ void Global_Application::CloseRDT(void)
 {
 	switch (Game)
 	{
+	case Video_Game::Resident_Evil_2_Nov_6_1996:
 	case Video_Game::Resident_Evil_2_Trial:
 	case Video_Game::Resident_Evil_2: if (Bio2->Rdt->IsOpen() && Window->Question(L"Do you want to save the current RDT file?")) { SaveRDT(); } break;
 	}
@@ -30,9 +31,18 @@ void Global_Application::CloseRDT(void)
 
 	switch (Game)
 	{
+	case Video_Game::Resident_Evil_2_Nov_6_1996:
 	case Video_Game::Resident_Evil_2_Trial:
 	case Video_Game::Resident_Evil_2: Bio2->Rdt->Close(); break;
 	}
+
+	Stage = 0;
+	Room = 0;
+	Disk = 0;
+
+	Geometry->iObjectMax = 0;
+
+	Player->CloseRoom();
 }
 
 void Global_Application::OpenRDT(void)
@@ -45,33 +55,62 @@ void Global_Application::OpenRDT(void)
 	{
 		switch (Game)
 		{
+		case Video_Game::Resident_Evil_2_Nov_6_1996:
+		case Video_Game::Resident_Evil_2_Trial:
 		case Video_Game::Resident_Evil_2:
 			if (Bio2->Rdt->Open(Filename.value()))
 			{
-				Camera->b_ViewTopDown = false;
-				Camera->b_ViewModelEdit = false;
-				Camera->SetMeta(Bio2->Rdt->m_Path, Bio2->Rdt->Stage, Bio2->Rdt->Room, Bio2->Rdt->GetCameraCount());
-				Camera->SetImage(0);
-				Camera->Set(Bio2->Rdt->Rid->Get(0)->ViewR >> 7, Bio2->Rdt->Rid->Get(0)->View_p, Bio2->Rdt->Rid->Get(0)->View_r);
-				Camera->m_Cx = GTE->ToFloat(Bio2->Rdt->Sca->GetHeader()->Cx);
-				Camera->m_Cz = GTE->ToFloat(Bio2->Rdt->Sca->GetHeader()->Cz);
 				Stage = Bio2->Rdt->Stage;
 				Room = Bio2->Rdt->Room;
 				Disk = Bio2->Rdt->Disk;
+
+				Camera->b_ViewTopDown = false;
+				Camera->b_ViewModelEdit = false;
+
+				Camera->m_Cx = GTE->ToFloat(Bio2->Rdt->Sca->GetHeader()->Cx);
+				Camera->m_Cz = GTE->ToFloat(Bio2->Rdt->Sca->GetHeader()->Cz);
+
+				Camera->SetMeta(Bio2->Rdt->m_Path, Bio2->Rdt->Stage, Bio2->Rdt->Room, Bio2->Rdt->GetCameraCount());
+				Camera->SetImage(0);
+				Camera->Set(Bio2->Rdt->Rid->Get(0)->ViewR >> 7, Bio2->Rdt->Rid->Get(0)->View_p, Bio2->Rdt->Rid->Get(0)->View_r);
+
+				Geometry->iObjectMax = Bio2->Rdt->Sca->Count() ? Bio2->Rdt->Sca->Count() - 1 : 0;
 			}
 			break;
 		}
 	}
 
 	CoUninitialize();
+
+	SetRoomAnimations();
 }
 
 void Global_Application::SaveRDT(void)
 {
 }
 
-void Global_Application::OpenModel(void)
+void Global_Application::SetRoomAnimations(void)
 {
+	switch (Game)
+	{
+	case Video_Game::Resident_Evil_2_Nov_6_1996:
+	case Video_Game::Resident_Evil_2_Trial:
+	case Video_Game::Resident_Evil_2:
+		if (Bio2->Rdt->IsOpen()) { Rbj = Bio2->Rdt->Rbj; } break;
+	}
+
+	Player->SetRoomAnimations(Rbj);
+}
+
+void Global_Application::OpenPlayerModel(std::filesystem::path Filename)
+{
+	if (!Filename.empty())
+	{
+		Player->Open(Filename);
+		SetRoomAnimations();
+		return;
+	}
+
 	if (FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED))) { return; }
 
 	if (auto Filename = Window->GetOpenFilename(
@@ -80,13 +119,20 @@ void Global_Application::OpenModel(void)
 	); Filename.has_value())
 	{
 		Player->Open(Filename.value());
+		SetRoomAnimations();
 	}
 
 	CoUninitialize();
 }
 
-void Global_Application::OpenModelTexture(void)
+void Global_Application::OpenPlayerTexture(std::filesystem::path Filename)
 {
+	if (!Filename.empty())
+	{
+		Player->OpenTexture(Filename);
+		return;
+	}
+
 	if (FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED))) { return; }
 
 	if (auto Filename = Window->GetOpenFilename(
@@ -100,7 +146,7 @@ void Global_Application::OpenModelTexture(void)
 	CoUninitialize();
 }
 
-void Global_Application::SaveModelTexture(void)
+void Global_Application::SavePlayerTexture(void)
 {
 	if (FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED))) { return; }
 
@@ -114,11 +160,11 @@ void Global_Application::SaveModelTexture(void)
 		std::filesystem::path Dir = Filename.value().parent_path();
 		std::filesystem::path Stem = Filename.value().stem();
 
-		if (Standard_String().ToUpper(Extension) == ".TIM")
+		if (Str.ToUpper(Extension) == ".TIM")
 		{
 			Player->Texture()->SaveTIM(Filename.value());
 		}
-		if (Standard_String().ToUpper(Extension) == ".BMP")
+		if (Str.ToUpper(Extension) == ".BMP")
 		{
 			if (Player->Texture()->GetPaletteCount())
 			{
@@ -131,7 +177,7 @@ void Global_Application::SaveModelTexture(void)
 			else { Player->Texture()->SaveBMP(Filename.value()); }
 		}
 #ifdef LIB_PNG
-		if (Standard_String().ToUpper(Extension) == ".PNG")
+		if (Str.ToUpper(Extension) == ".PNG")
 		{
 			if (Player->Texture()->GetPaletteCount())
 			{
@@ -145,7 +191,7 @@ void Global_Application::SaveModelTexture(void)
 		}
 #endif
 #ifdef LIB_JPEG
-		if ((Standard_String().ToUpper(Extension) == ".JPG" || Standard_String().ToUpper(Extension) == ".JPEG"))
+		if ((Str.ToUpper(Extension) == ".JPG" || Str.ToUpper(Extension) == ".JPEG"))
 		{
 			if (Player->Texture()->GetPaletteCount())
 			{
@@ -176,8 +222,8 @@ void Global_Application::Screenshot(void)
 
 		String Extension = Filename.value().extension().string();
 
-		if (Standard_String().ToUpper(Extension) == ".PNG") { FileFormat = D3DXIFF_PNG; }
-		if (Standard_String().ToUpper(Extension) == ".JPG" || Standard_String().ToUpper(Extension) == ".JPEG") { FileFormat = D3DXIFF_JPG; }
+		if (Str.ToUpper(Extension) == ".PNG") { FileFormat = D3DXIFF_PNG; }
+		if (Str.ToUpper(Extension) == ".JPG" || Str.ToUpper(Extension) == ".JPEG") { FileFormat = D3DXIFF_JPG; }
 
 		Render->SaveTexture(m_RenderTexture.get(), FileFormat, true, Filename.value());
 	}

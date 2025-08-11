@@ -15,7 +15,7 @@ void Global_Application::ModelEditor(void)
 		{
 			if (ImGui::MenuItem("Open##ModelFileMenu"))
 			{
-				OpenModel();
+				OpenPlayerModel();
 			}
 			if (ImGui::MenuItem("Save As##ModelFileMenu"))
 			{
@@ -38,11 +38,11 @@ void Global_Application::ModelEditor(void)
 		{
 			if (ImGui::MenuItem("Open##ModelTextureMenu"))
 			{
-				OpenModelTexture();
+				OpenPlayerTexture();
 			}
 			if (ImGui::MenuItem("Save As##ModelTextureMenu"))
 			{
-				SaveModelTexture();
+				SavePlayerTexture();
 			}
 			ImGui::EndMenu();
 		}
@@ -53,7 +53,7 @@ void Global_Application::ModelEditor(void)
 		ImGui::EndMenuBar();
 	}
 
-	if (ImGui::CollapsingHeader("File##ModelEditor", ImGuiTreeNodeFlags_None))
+	if (ImGui::CollapsingHeader("Type##ModelEditor", ImGuiTreeNodeFlags_None))
 	{
 		bool b_Bio1Alpha = Player->GameType() & (AUG95 | OCT95);
 		bool b_Bio1 = Player->GameType() & (BIO1);
@@ -133,15 +133,74 @@ void Global_Application::ModelEditor(void)
 		}
 		TooltipOnHover("Polygons will be drawn as textured");
 
-		ImGui::MenuItem(" Skeleton##ModelRender", NULL, &Player->b_DrawSkeleton);
+		ImGui::MenuItem(" Skeleton##ModelRender", NULL, &Player->b_DrawSkeletonMesh);
 		TooltipOnHover("Skeleton mesh will be drawn");
 
 		DrawVerticalLine(8.0f, 12.0f, 2.0f, m_BorderRed, m_BorderGreen, m_BorderBlue);
 	}
 
+	if (ImGui::CollapsingHeader("Draw##ModelEditor", ImGuiTreeNodeFlags_None))
+	{
+		ImGui::MenuItem(" Hitbox##ModelDraw", NULL, &Player->b_DrawHitbox);
+		TooltipOnHover("Draw the model's interactive/collision hitbox");
+
+		if (ImGui::MenuItem(" All Objects##ModelDraw", NULL, &Player->b_DrawAllObjects))
+		{
+			Player->b_DrawReference = false;
+			Player->b_DrawSingleObject = false;
+		}
+		TooltipOnHover("Ignore keyframes and skeleton and draw all objects\r\nOnly draw weapon when \"Weapon\" is active");
+
+		if (ImGui::BeginTable("ModelDrawPanel##ModelDraw", 2))
+		{
+			ImGui::TableNextColumn();
+			if (ImGui::MenuItem(" Object##ModelDraw", NULL, &Player->b_DrawSingleObject))
+			{
+				Player->b_DrawReference = false;
+				Player->b_DrawAllObjects = false;
+			}
+			TooltipOnHover(Str.FormatCStyle("Ignore keyframes and skeleton and draw all object %d\r\nOnly draw weapon when \"Weapon\" is active", Player->iObject));
+
+			ImGui::TableNextColumn();
+			ImGui::BeginDisabled(!Player->b_DrawSingleObject);
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::SliderScalar("##ModelDrawObject", ImGuiDataType_U64, &Player->iObject, &Player->iObjectMin, &Player->iObjectMax))
+			{
+				Player->iObject = std::clamp(Player->iObject, (size_t)0, Player->iObjectMax);
+			}
+			ScrollOnHover(&Player->iObject, ImGuiDataType_U64, 1, Player->iObjectMin, Player->iObjectMax);
+			ImGui::EndDisabled();
+
+			ImGui::EndTable();
+		}
+
+		ImGui::BeginDisabled(Player->WeaponModelDX9() ? Player->WeaponModelDX9()->Object.empty() : true);
+		if (ImGui::BeginTable("Weapon##ModelDrawWeapon", 2))
+		{
+			ImGui::TableNextColumn();
+			ImGui::MenuItem(" Weapon##ModelDraw", NULL, &Player->b_DrawWeapon);
+			TooltipOnHover("Draw weapon model");
+
+			ImGui::TableNextColumn();
+			ImGui::BeginDisabled(!Player->b_DrawWeapon);
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::SliderScalar("##ModelDrawWeaponID", ImGuiDataType_U64, &Player->iWeaponObject, &Player->iWeaponObjectMin, &Player->iWeaponObjectMax))
+			{
+				Player->iWeaponObject = std::clamp(Player->iWeaponObject, (size_t)0, Player->iWeaponObjectMax);
+			}
+			TooltipOnHover("ID of model object to replace with weapon model");
+			ScrollOnHover(&Player->iWeaponObject, ImGuiDataType_U64, 1, Player->iWeaponObjectMin, Player->iWeaponObjectMax);
+			ImGui::EndDisabled();
+
+			ImGui::EndTable();
+		}
+		ImGui::EndDisabled();
+	}
+
 	if (ImGui::CollapsingHeader("Transform##ModelEditor", ImGuiTreeNodeFlags_None))
 	{
-		TooltipOnHover("World Position and Rotation");
+		TooltipOnHover("Position, Rotation and Scale");
+
 		if (ImGui::BeginTable("Transform##ModelTransform", 4))
 		{
 			ImGui::TableSetupColumn("Label##ModelTransform", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("____").x);
@@ -240,6 +299,8 @@ void Global_Application::ModelEditor(void)
 
 	if (ImGui::CollapsingHeader("Index##ModelEditor", ImGuiTreeNodeFlags_None))
 	{
+		TooltipOnHover("Animation Type");
+
 		bool b_Normal = Player->AnimIndex() == AnimationIndex::Normal;
 		bool b_NormalEx0 = Player->AnimIndex() == AnimationIndex::NormalEx0;
 		bool b_NormalEx1 = Player->AnimIndex() == AnimationIndex::NormalEx1;
@@ -249,21 +310,73 @@ void Global_Application::ModelEditor(void)
 		bool b_WeaponEx1 = Player->AnimIndex() == AnimationIndex::WeaponEx1;
 		bool b_Room = Player->AnimIndex() == AnimationIndex::Room;
 
-		if (ImGui::MenuItem(" Normal##ModelAnimation", NULL, &b_Normal)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::Normal; }
+		if (ImGui::MenuItem(" Normal##ModelAnimationIndex", NULL, &b_Normal)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::Normal; }
 		TooltipOnHover("Normal Animation");
-		if (ImGui::MenuItem(" Normal Ex0##ModelAnimation", NULL, &b_NormalEx0)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::NormalEx0; }
+		if (ImGui::MenuItem(" Normal Ex0##ModelAnimationIndex", NULL, &b_NormalEx0)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::NormalEx0; }
 		TooltipOnHover("Normal Animation Extra\r\nEMD (Bio2/Bio3)");
-		if (ImGui::MenuItem(" Normal Ex1##ModelAnimation", NULL, &b_NormalEx1)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::NormalEx1; }
+		if (ImGui::MenuItem(" Normal Ex1##ModelAnimationIndex", NULL, &b_NormalEx1)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::NormalEx1; }
 		TooltipOnHover("Normal Animation Extra\r\nEMD (Bio3)");
-		if (ImGui::MenuItem(" Damage##ModelAnimation", NULL, &b_Damage)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::Damage; }
+		if (ImGui::MenuItem(" Damage##ModelAnimationIndex", NULL, &b_Damage)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::Damage; }
 		TooltipOnHover("Damage Animation\r\nEMD, for use with Player");
-		if (ImGui::MenuItem(" Weapon##ModelAnimation", NULL, &b_Weapon)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::Weapon; }
+		if (ImGui::MenuItem(" Weapon##ModelAnimationIndex", NULL, &b_Weapon)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::Weapon; }
 		TooltipOnHover("Weapon Animation\r\nEMW (Bio1) or PLW (Bio2/Bio3)");
-		if (ImGui::MenuItem(" Weapon Ex0##ModelAnimation", NULL, &b_WeaponEx0)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::WeaponEx0; }
+		if (ImGui::MenuItem(" Weapon Ex0##ModelAnimationIndex", NULL, &b_WeaponEx0)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::WeaponEx0; }
 		TooltipOnHover("Weapon Animation Ex0\r\nPLW/EMD (Bio3), unknown purpose");
-		if (ImGui::MenuItem(" Weapon Ex1##ModelAnimation", NULL, &b_WeaponEx1)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::WeaponEx1; }
+		if (ImGui::MenuItem(" Weapon Ex1##ModelAnimationIndex", NULL, &b_WeaponEx1)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::WeaponEx1; }
 		TooltipOnHover("Weapon Animation Ex1\r\nPLW/EMD (Bio3)");
-		if (ImGui::MenuItem(" Room##ModelAnimation", NULL, &b_Room)) { Player->iFrame = 0; Player->AnimIndex() = AnimationIndex::Room; }
-		TooltipOnHover("Room Animation\r\nRDT");
+
+		if (ImGui::BeginTable("Room##ModelAnimationIndexTable", 2))
+		{
+			ImGui::TableNextColumn();
+			if (ImGui::MenuItem(" Room##ModelAnimationIndexTable", NULL, &b_Room)) { Player->ResetClip(); Player->AnimIndex() = AnimationIndex::Room; }
+			TooltipOnHover("Room Animation\r\nRDT");
+
+			ImGui::TableNextColumn();
+			ImGui::BeginDisabled(!IsRoomOpen() || !Player->iRoomMax);
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::SliderScalar("##ModelAnimationIndex", ImGuiDataType_U64, &Player->iRoom, &Player->iRoomMin, &Player->iRoomMax))
+			{
+				Player->iRoom = std::clamp(Player->iRoom, (size_t)0, Player->iRoomMax);
+				Player->Animation(AnimationIndex::Room) = Bio2->Rdt->Rbj->Data[Player->iRoom];
+			}
+			ScrollOnHover(&Player->iRoom, ImGuiDataType_U64, 1, Player->iRoomMin, Player->iRoomMax);
+			ImGui::EndDisabled();
+			TooltipOnHover("Room Animation Container ID");
+
+			ImGui::EndTable();
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Playback##ModelEditor", ImGuiTreeNodeFlags_None))
+	{
+		if (ImGui::MenuItem(" Root##ModelPlayback", NULL, &Player->b_DrawReference))
+		{
+			Player->b_DrawSingleObject = false;
+			Player->b_DrawAllObjects = false;
+		}
+		TooltipOnHover("Ignore keyframes, use skeleton reference instead");
+
+		ImGui::MenuItem(" Lock##ModelPlayback", NULL, &Player->b_LockPosition);
+		TooltipOnHover("Lock model in position when drawing keyframes");
+
+		//ImGui::MenuItem(" Play##ModelPlayback", NULL, &Player->b_Play);
+		//TooltipOnHover("Play/Pause keyframe playback");
+
+		//ImGui::MenuItem(" Loop##ModelPlayback", NULL, &Player->b_Loop);
+		//TooltipOnHover("Loop keyframe playback");
+
+		if (ImGui::BeginTable("Keyframe##ModelPlayback", 2))
+		{
+			ImGui::TableNextColumn(); ImGui::Text(" Keyframe");
+
+			size_t iFrameMin = 0;
+			size_t iFrameMax = Player->Animation(Player->AnimIndex())->GetFrameCount(Player->iClip);
+			ImGui::TableNextColumn();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x);
+			ImGui::SliderScalar("##ModelPlaybackKeyframe", ImGuiDataType_U64, &Player->iFrame, &iFrameMin, &iFrameMax);
+			ScrollOnHover(&Player->iFrame, ImGuiDataType_U64, 1, iFrameMin, iFrameMax);
+
+			ImGui::EndTable();
+		}
 	}
 }

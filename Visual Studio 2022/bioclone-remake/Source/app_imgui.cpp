@@ -223,6 +223,13 @@ void Global_Application::RenderWindow(void)
 			m_MouseScaledX = m_MouseX * (Camera->m_NativeWidth / (float)(m_RenderWidth));
 			m_MouseScaledY = m_MouseY * (Camera->m_NativeHeight / (float)(m_RenderHeight));
 
+			// adjust for direct-x 9 half texel
+			m_MouseScaledX -= 0.5f;
+			m_MouseScaledY -= 0.5f;
+
+			m_MouseScaledX = std::clamp(m_MouseScaledX, 0.0f, (float)Camera->m_NativeWidth);
+			m_MouseScaledY = std::clamp(m_MouseScaledY, 0.0f, (float)Camera->m_NativeHeight);
+
 			ImGui::BeginTooltip();
 			ImGui::Text("%.f, %.f", m_MouseScaledX, m_MouseScaledY);
 			ImGui::EndTooltip();
@@ -237,6 +244,24 @@ void Global_Application::RenderWindow(void)
 
 			ImGui::SetScrollX((ImGui::GetScrollX() + ImGui::GetMousePos().x - ImGui::GetWindowPos().x) * (m_RenderZoom / RenderZoom) - (ImGui::GetMousePos().x - ImGui::GetWindowPos().x));
 			ImGui::SetScrollY((ImGui::GetScrollY() + ImGui::GetMousePos().y - ImGui::GetWindowPos().y) * (m_RenderZoom / RenderZoom) - (ImGui::GetMousePos().y - ImGui::GetWindowPos().y));
+		}
+	}
+	else if (Camera->b_ViewTopDown && ImGui::IsItemHovered())
+	{
+		if (ImGui::GetIO().KeyCtrl && Window->Device()->GetMouseDeltaZ())
+		{
+			Camera->m_Cy += Window->Device()->GetMouseDeltaZ() * 2.5f;
+			Camera->SetTopDownPerspective();
+		}
+		else if (Window->Device()->GetMouseDeltaX())
+		{
+			Camera->m_Cx += Window->Device()->GetMouseDeltaX() * -0.25f;
+			Camera->SetTopDownPerspective();
+		}
+		else if (Window->Device()->GetMouseDeltaZ())
+		{
+			Camera->m_Cz += Window->Device()->GetMouseDeltaZ() * -0.25f;
+			Camera->SetTopDownPerspective();
 		}
 	}
 
@@ -258,7 +283,19 @@ void Global_Application::LeftPanel(ImVec2 Position, ImVec2 Size)
 	ImGui::Text(" Disk: %d", Disk);
 	ImGui::Text(" Cut: %d / %d", Camera->Cut, Camera->CutMax ? Camera->CutMax - 1 : 0);
 
+	DrawVerticalLine(8.0f, 12.0f, 2.0f, m_BorderRed, m_BorderGreen, m_BorderBlue);
+
+	ImGui::BeginDisabled(Player->Filename().empty());
+	ImGui::Text(" %ws", Player->Filename().empty() ? L"N/A" : Player->Filename().stem().wstring().c_str());
+	ImGui::EndDisabled();
+
+	ImGui::BeginDisabled(Player->WeaponFilename().empty());
+	ImGui::Text(" %ws", Player->WeaponFilename().empty() ? L"N/A" : Player->WeaponFilename().stem().wstring().c_str());
+	ImGui::EndDisabled();
+
+	ImGui::BeginDisabled(!Player->Animation(Player->AnimIndex())->IsOpen());
 	ImGui::Text(" Anim: %d / %d", Player->iClip, Player->Animation(Player->AnimIndex())->IsOpen() ? Player->Animation(Player->AnimIndex())->GetClipCount() - 1 : 0);
+	ImGui::EndDisabled();
 
 	DrawVerticalLine(8.0f, 12.0f, 2.0f, m_BorderRed, m_BorderGreen, m_BorderBlue);
 
@@ -361,9 +398,20 @@ void Global_Application::RightPanel(ImVec2 Position, ImVec2 Size)
 		return;
 	}
 
-	if (ImGui::CollapsingHeader("Player##RightPanel", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("Collision##RightPanel", ImGuiTreeNodeFlags_None))
 	{
-		TooltipOnHover("World Position and Rotation");
+		ImGui::BeginDisabled(!Geometry->b_DrawCollision);
+		CollisionEditor();
+		ImGui::EndDisabled();
+	}
+
+	if (ImGui::CollapsingHeader("Player##RightPanel", ImGuiTreeNodeFlags_None))
+	{
+		TooltipOnHover("Position, Rotation and Scale");
+
+		ImGui::MenuItem(" Collision##ModelEditor", NULL, &Geometry->b_CollisionDetection);
+		TooltipOnHover("Collision detection on/off");
+
 		if (ImGui::BeginTable("Transform##PlayerRightPanel", 4))
 		{
 			ImGui::TableSetupColumn("Label##PlayerRightPanel", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("____").x);

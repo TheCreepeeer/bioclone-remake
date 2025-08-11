@@ -50,8 +50,8 @@ void Global_Application::RenderScene(void)
 {
 	if (!m_RenderTexture || !m_RenderSurface) { return; }
 
-	IDirect3DSurface9* OriginalSurface = nullptr;
-	IDirect3DSurface9* TextureSurface = nullptr;
+	static IDirect3DSurface9* OriginalSurface = nullptr;
+	static IDirect3DSurface9* TextureSurface = nullptr;
 
 	{
 		Render->Device()->GetRenderTarget(0, &OriginalSurface);
@@ -62,9 +62,16 @@ void Global_Application::RenderScene(void)
 	}
 
 	{
+		Render->Device()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+		Render->Device()->SetRenderState(D3DRS_CLIPPING, FALSE);
+
 		if (Render->b_ViewGrid) { Render->DrawGrid(); }
 
 		if (Render->b_ViewAxis) { Render->DrawAxis(); }
+
+		DrawBackground();
+
+		DrawSprite();
 
 		DrawCamera();
 
@@ -76,19 +83,16 @@ void Global_Application::RenderScene(void)
 
 		DrawFloor();
 
+		if (Geometry->b_CollisionDetection) { Collision(Player->Position(), Player->Hitbox()); }
+
+		if (Player->b_DrawHitbox) { Geometry->DrawCylinder(Player->HitboxShape(), Player->b_EditorMode ? Player->EditorRotation() : Player->Rotation(), 0x00C5C5C5, true); }
+
 		Render->Device()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_BORDER);
 		Render->Device()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_BORDER);
 		Render->Device()->SetSamplerState(0, D3DSAMP_ADDRESSW, D3DTADDRESS_BORDER);
 		Render->Device()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, 0x00000000);
 
 		Player->Draw();
-
-		Render->Device()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		Render->Device()->SetRenderState(D3DRS_CLIPPING, FALSE);
-
-		DrawBackground();
-
-		DrawSprite();
 	}
 
 	{
@@ -207,12 +211,12 @@ void Global_Application::Update(void)
 
 	if (!ImGui::GetKeyData(ImGuiKey_LeftArrow)->DownDuration)
 	{
-		if (ImGui::GetIO().KeyCtrl)
+		if (ImGui::GetIO().KeyCtrl && Player->Animation(Player->AnimIndex())->IsOpen())
 		{
 			Player->iClip--;
 			Player->iFrame = 0;
 		}
-		else
+		else if (!Player->b_EditorMode)
 		{
 			switch (Game)
 			{
@@ -230,12 +234,12 @@ void Global_Application::Update(void)
 
 	if (!ImGui::GetKeyData(ImGuiKey_RightArrow)->DownDuration)
 	{
-		if (ImGui::GetIO().KeyCtrl)
+		if (ImGui::GetIO().KeyCtrl && Player->Animation(Player->AnimIndex())->IsOpen())
 		{
 			Player->iClip++;
 			Player->iFrame = 0;
 		}
-		else
+		else if (!Player->b_EditorMode)
 		{
 			switch (Game)
 			{
@@ -250,25 +254,6 @@ void Global_Application::Update(void)
 			}
 		}
 	}
-
-	if (Camera->b_ViewTopDown)
-	{
-		if (ImGui::GetIO().KeyCtrl && Window->Device()->GetMouseDeltaZ())
-		{
-			Camera->m_Cy += Window->Device()->GetMouseDeltaZ() * 2.5f;
-			Camera->SetTopDownPerspective();
-		}
-		else if (Window->Device()->GetMouseDeltaX())
-		{
-			Camera->m_Cx += Window->Device()->GetMouseDeltaX() * -0.25f;
-			Camera->SetTopDownPerspective();
-		}
-		else if (Window->Device()->GetMouseDeltaZ())
-		{
-			Camera->m_Cz += Window->Device()->GetMouseDeltaZ() * -0.25f;
-			Camera->SetTopDownPerspective();
-		}
-	}
 }
 
 void Global_Application::Shutdown(void)
@@ -276,6 +261,13 @@ void Global_Application::Shutdown(void)
 	if (b_Shutdown) { return; }
 
 	SaveConfig();
+
+	Player->b_Active = false;
+
+	while (Player->b_Drawing)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
 
 	Camera->Shutdown();
 
@@ -550,7 +542,7 @@ int Global_Application::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWST
 				Draw();
 			});
 
-		if (b_ForceShutdown)
+		if (b_ForceShutdown || Render->b_ForceShutdown)
 		{
 			b_Active = false;
 		}

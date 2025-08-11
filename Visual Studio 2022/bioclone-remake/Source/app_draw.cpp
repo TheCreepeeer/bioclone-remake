@@ -11,9 +11,12 @@ void Global_Application::DrawBackground(void) const
 {
 	if (!Camera->b_ViewTopDown && !Camera->b_ViewModelEdit && Camera->b_ViewBackground && Camera->m_Background)
 	{
+#if MSTD_DX9
 		Render->SetDepthScale(1.0f, 1.0f);
 
 		Render->AlphaBlending(FALSE, D3DBLEND_ZERO, D3DBLEND_ZERO);
+
+		Render->AlphaTesting(FALSE, 0x00, D3DCMP_NEVER);
 
 		Render->Draw({ Camera->m_BackgroundVert.get(), nullptr, Camera->m_Background.get(), Render->PassthroughPixelShader.get(),
 			{ TRUE, D3DZB_TRUE, D3DCMP_LESSEQUAL },
@@ -21,6 +24,7 @@ void Global_Application::DrawBackground(void) const
 			{ Camera->m_TexWidth, Camera->m_TexHeight },
 			{ nullptr, nullptr, (D3DXMATRIX*)Camera->Orthogonal.get() } });
 	}
+#endif
 }
 
 void Global_Application::DrawCamera(void)
@@ -64,6 +68,7 @@ void Global_Application::DrawCamera(void)
 		Shape.push_back(vec3(Arrow.x + Perpendicular1.x, 0.0f, Arrow.z + Perpendicular1.z));
 	}
 
+#if MSTD_DX9
 	std::unique_ptr<IDirect3DVertexBuffer9, IDirect3DDelete9<IDirect3DVertexBuffer9>> Vertices;
 	Vertices.reset(Render->CreateVec3c(Shape, 0x00FF0000));
 
@@ -72,6 +77,7 @@ void Global_Application::DrawCamera(void)
 	Render->DrawVec3c(Vertices.get(), nullptr, nullptr, D3DFILL_WIREFRAME, D3DPT_LINELIST);
 
 	Render->ResetWorld();
+#endif
 }
 
 void Global_Application::DrawSprite(void)
@@ -82,6 +88,8 @@ void Global_Application::DrawSprite(void)
 		Render->SetDepthScale(32.0f, 16384.0f);
 
 		Render->AlphaBlending(TRUE, D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+
+		Render->AlphaTesting(TRUE, 0xFF, D3DCMP_GREATEREQUAL);
 	}
 
 	if (GameType() & (BIO2NOV96 | BIO2TRIAL | BIO2))
@@ -98,12 +106,16 @@ void Global_Application::DrawSprite(void)
 				float W = (float)Sprite.w * Camera->m_OrthoScaleX;
 				float H = (float)Sprite.h * Camera->m_OrthoScaleY;
 
-				// adjust for direct-x 9 half texel
+#if MSTD_DX9
 				X -= 0.5f;
 				Y += 0.5f;
 
 				float OffsetU = 0.5f / Camera->m_TexSprWidth;
 				float OffsetV = 0.5f / Camera->m_TexSprHeight;
+#else
+				float OffsetU  = 0.0f;
+				float OffsetV = 0.0f;
+#endif
 
 				float U0 = ((float)Sprite.u + OffsetU) / Camera->m_TexSprWidth;
 				float V0 = ((float)Sprite.v + OffsetV) / Camera->m_TexSprHeight;
@@ -118,6 +130,7 @@ void Global_Application::DrawSprite(void)
 					{ vec4{ X + W,	Y + H,	Z, 1.0f }, vec2{ U1, V1 } },
 					{ vec4{ X + W,	Y,		Z, 1.0f }, vec2{ U1, V0 } } };
 
+#if MSTD_DX9
 				std::unique_ptr<IDirect3DVertexBuffer9, IDirect3DDelete9<IDirect3DVertexBuffer9>> Vertices;
 				Vertices.reset(Render->CreateVec4t(Vector));
 
@@ -126,8 +139,17 @@ void Global_Application::DrawSprite(void)
 					{ sizeof(vec4t), D3DFILL_SOLID, D3DPT_TRIANGLESTRIP },
 					{ Camera->m_TexSprWidth, Camera->m_TexSprHeight },
 					{ nullptr, nullptr, (D3DXMATRIX*)Camera->Orthogonal.get() } });
+#endif
 			}
 		}
+	}
+
+	{
+		Render->SetDepthScale(0.0f, 0.0f);
+
+		Render->AlphaBlending(FALSE, D3DBLEND_ZERO, D3DBLEND_ZERO);
+
+		Render->AlphaTesting(FALSE, 0x00, D3DCMP_NEVER);
 	}
 }
 
@@ -155,81 +177,43 @@ void Global_Application::DrawCollision(void)
 	{
 		for (std::size_t i = 0; i < Bio2->Rdt->Sca->Count(); i++)
 		{
-			std::int16_t XX = Bio2->Rdt->Sca->Get(i)->X;
-			std::int16_t ZZ = Bio2->Rdt->Sca->Get(i)->Z;
-			std::uint16_t WW = Bio2->Rdt->Sca->Get(i)->W;
-			std::uint16_t DD = Bio2->Rdt->Sca->Get(i)->D;
+			SHAPEVECTOR Vec = Bio2->Rdt->Sca->GetShapeVector(i);
 
-			std::int32_t Ground = Bio2->Rdt->Sca->GetLow(i);
-			std::int32_t High = Bio2->Rdt->Sca->GetHigh(i);
+			bool b_Shape = Geometry->b_ShapeCollision ? (Geometry->iObject == i) ? true : Geometry->b_ShapeCollisionAll : Geometry->b_ShapeCollisionAll;
 
-			if (Ground < High) { Ground = High; }
+			bool b_Solid = Geometry->b_SolidCollision ? (Geometry->iObject == i) ? true : Geometry->b_SolidCollisionAll : Geometry->b_SolidCollisionAll;
 
-			bool b_Solid = false;
+			DWORD Color = Geometry->b_HighlightCollision ? (Geometry->iObject == i) ? 0x00FF0000 : 0x00C5C5C5 : 0x00C5C5C5;
 
-			bool b_Shape = true;
-
-			if (!b_Shape) { High = Ground; }
+			if (!b_Shape) { Vec.h = Vec.y; }
 
 			switch (Bio2->Rdt->Sca->Get(i)->Id.Bits.Shape)
 			{
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Box):
-				Geometry->DrawBox({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid);
-				break;
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_a):
-				Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Naname_A);
-				break;
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_b):
-				Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Naname_B);
-				break;
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_c):
-				Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Naname_C);
-				break;
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_d):
-				Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Naname_D);
-				break;
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Hishi):
-				Geometry->DrawRhombus({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid);
-				break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Box): Geometry->DrawBox(Vec, {}, Color, b_Solid); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_a): Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Triangle_A); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_b): Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Triangle_B); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_c): Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Triangle_C); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_d): Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Triangle_D); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Hishi): Geometry->DrawRhombus(Vec, {}, Color, b_Solid); break;
 			case std::to_underlying(Resident_Evil_2_Collision_Shape::Circle):
 			case std::to_underlying(Resident_Evil_2_Collision_Shape::Koban_x):
-			case std::to_underlying(Resident_Evil_2_Collision_Shape::Koban_z):
-				Geometry->DrawCylinder({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid);
-				break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Koban_z): Geometry->DrawCylinder(Vec, {}, Color, b_Solid); break;
 			case std::to_underlying(Resident_Evil_2_Collision_Shape::Slope):
 				switch (Bio2->Rdt->Sca->GetSlopeHypotenuse(i))
 				{
-				case Resident_Evil_2_Slope_Hypotenuse::Type_A:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_A);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_B:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_B);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_C:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_C);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_D:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_D);
-					break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_A: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_A); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_B: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_B); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_C: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_C); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_D: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_D); break;
 				}
 				break;
 			case std::to_underlying(Resident_Evil_2_Collision_Shape::Box_3):
-				High = Bio2->Rdt->Sca->Get(i)->Type.Bits.nFloor * -1800;
-
 				switch (Bio2->Rdt->Sca->GetSlopeHypotenuse(i))
 				{
-				case Resident_Evil_2_Slope_Hypotenuse::Type_A:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_A | Resident_Evil_Triangle_Type::Stairs);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_B:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_B | Resident_Evil_Triangle_Type::Stairs);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_C:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_C | Resident_Evil_Triangle_Type::Stairs);
-					break;
-				case Resident_Evil_2_Slope_Hypotenuse::Type_D:
-					Geometry->DrawTriangle({ XX, Ground, ZZ, WW, High, DD }, { }, 0x00C5C5C5, b_Solid, Resident_Evil_Triangle_Type::Slope_D | Resident_Evil_Triangle_Type::Stairs);
-					break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_A: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_A); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_B: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_B); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_C: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_C); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_D: Geometry->DrawTriangle(Vec, {}, Color, b_Solid, Shape_Type::Slope_D); break;
 				}
 				break;
 			}
@@ -267,6 +251,40 @@ void Global_Application::DrawFloor(void)
 			std::uint16_t DD = Bio2->Rdt->Flr->Get(i)->D;
 
 			Geometry->DrawBox({ XX, 0, ZZ, WW, 0, DD }, { }, 0x0000FFFF, false);
+		}
+	}
+}
+
+void Global_Application::Collision(VECTOR2& Position, SIZEVECTOR Hitbox)
+{
+	if (Camera->b_ViewModelEdit || !IsRoomOpen()) { return; }
+
+	if (GameType() & (BIO2NOV96 | BIO2TRIAL | BIO2))
+	{
+		for (std::size_t i = 0; i < Bio2->Rdt->Sca->Count(); i++)
+		{
+			switch (Bio2->Rdt->Sca->Get(i)->Id.Bits.Shape)
+			{
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Box): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Rectangle); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_a): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Triangle_A); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_b): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Triangle_B); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_c): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Triangle_C); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Naname_d): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Triangle_D); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Hishi): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Rhombus); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Circle): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Circle); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Koban_x): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::OblongX); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Koban_z): Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::OblongZ); break;
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Slope):
+			case std::to_underlying(Resident_Evil_2_Collision_Shape::Box_3):
+				switch (Bio2->Rdt->Sca->GetSlopeHypotenuse(i))
+				{
+				case Resident_Evil_2_Slope_Hypotenuse::Type_A: Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Slope_A); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_B: Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Slope_B); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_C: Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Slope_C); break;
+				case Resident_Evil_2_Slope_Hypotenuse::Type_D: Geometry->Collision(Position, Hitbox, Bio2->Rdt->Sca->GetShapeVector(i), Shape_Type::Slope_D); break;
+				}
+				break;
+			}
 		}
 	}
 }

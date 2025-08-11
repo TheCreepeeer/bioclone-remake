@@ -112,6 +112,31 @@ void Global_Application::OpenConfig(void)
 			{
 				Geometry->b_DrawFloor = std::stoi(Args[1]);
 			}
+
+			if (Str.ToUpper(Args[0]) == L"B_SOLIDCOLLISION")
+			{
+				Geometry->b_SolidCollision = std::stoi(Args[1]);
+			}
+
+			if (Str.ToUpper(Args[0]) == L"B_SOLIDCOLLISIONALL")
+			{
+				Geometry->b_SolidCollisionAll = std::stoi(Args[1]);
+			}
+
+			if (Str.ToUpper(Args[0]) == L"B_SHAPECOLLISION")
+			{
+				Geometry->b_ShapeCollision = std::stoi(Args[1]);
+			}
+
+			if (Str.ToUpper(Args[0]) == L"B_SHAPECOLLISIONALL")
+			{
+				Geometry->b_ShapeCollisionAll = std::stoi(Args[1]);
+			}
+
+			if (Str.ToUpper(Args[0]) == L"B_HIGHLIGHTCOLLISION")
+			{
+				Geometry->b_HighlightCollision = std::stoi(Args[1]);
+			}
 		}
 	}
 }
@@ -149,6 +174,12 @@ void Global_Application::SaveConfig(void)
 	Text->AddLine(L"b_ViewCollision\t%d\r", Geometry->b_DrawCollision);
 	Text->AddLine(L"b_ViewBlock\t%d\r", Geometry->b_DrawBlock);
 	Text->AddLine(L"b_ViewFloor\t%d\r", Geometry->b_DrawFloor);
+
+	Text->AddLine(L"b_SolidCollision\t%d\r", Geometry->b_SolidCollision);
+	Text->AddLine(L"b_SolidCollisionAll\t%d\r", Geometry->b_SolidCollisionAll);
+	Text->AddLine(L"b_ShapeCollision\t%d\r", Geometry->b_ShapeCollision);
+	Text->AddLine(L"b_ShapeCollisionAll\t%d\r", Geometry->b_ShapeCollisionAll);
+	Text->AddLine(L"b_HighlightCollision\t%d\r", Geometry->b_HighlightCollision);
 
 	Text->FlushUTF16();
 }
